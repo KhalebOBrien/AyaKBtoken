@@ -1,16 +1,26 @@
-pragma solidity ^0.4.17;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.7;
+import "@openzeppelin/contracts/utils/Address.sol";
 
 contract AyaKBtoken {
-    function withdraw() public {
-        msg.sender.transfer(address(this).balance);
+    mapping(address => uint256) public ethBalance;
+
+    constructor() {}
+
+    // checks a address balance
+    function checkBalance(address _userAddress) public view returns (uint256) {
+        return ethBalance[_userAddress];
     }
 
-    function deposit(uint256 amount) payable public {
-        require(msg.value == amount);
-        // nothing else to do!
+    // method to fund an address payable
+    function deposit() public payable {
+        ethBalance[msg.sender] += msg.value;
     }
 
-    function getBalance() public view returns (uint256) {
-        return address(this).balance;
+    // method to withdraw eth from address payable
+    function withdraw(uint256 _amount) public {
+        require(ethBalance[msg.sender] > _amount, "Amount exceeds balance");
+        Address.sendValue(payable(msg.sender), _amount);
+        ethBalance[msg.sender] -= _amount;
     }
 }
